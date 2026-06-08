@@ -61,22 +61,52 @@ export function LoginPage({ onNavigate, mode = "login" }: LoginPageProps) {
     return e;
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
     const errs = currentMode === "login" ? validateLogin() : validateRegister();
     setErrors(errs);
     if (Object.keys(errs).length > 0) return;
 
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+
+    try {
       if (currentMode === "register") {
+        const { error } = await supabase.auth.signUp({
+          email: form.emailOrCpf,
+          password: form.password,
+          options: {
+            data: {
+              name: form.name,
+              cpf: form.cpf,
+              phone: form.phone,
+            },
+          },
+        });
+
+        if (error) throw error;
+
         setSuccess(true);
         setTimeout(() => onNavigate("dashboard"), 1800);
-      } else {
-        onNavigate("dashboard");
+        return;
       }
-    }, 1200);
+
+      const { error } = await supabase.auth.signInWithPassword({
+        email: form.emailOrCpf,
+        password: form.password,
+      });
+
+      if (error) throw error;
+
+      onNavigate("dashboard");
+    } catch (err: any) {
+      setErrors((prev) => ({
+        ...prev,
+        submit: err.message || "Erro ao autenticar.",
+      }));
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleForgot = (e: React.FormEvent) => {

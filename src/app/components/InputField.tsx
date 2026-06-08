@@ -24,7 +24,10 @@ export function InputField({
 }: InputFieldProps) {
     return (
         <div>
-            <label className="block text-sm text-[#0c2d6b] mb-1.5" style={{ fontWeight: 600 }}>
+            <label
+                className="block text-sm text-[#0c2d6b] mb-1.5"
+                style={{ fontWeight: 600 }}
+            >
                 {label}
             </label>
 
