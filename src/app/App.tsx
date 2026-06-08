@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { LandingPage } from "./components/LandingPage";
 import { LoginPage } from "./components/LoginPage";
@@ -6,7 +7,6 @@ import { Dashboard } from "./components/Dashboard";
 type Page = "landing" | "login" | "register" | "dashboard";
 
 export default function App() {
-  {/* MARKER-MAKE-KIT-INVOKED */}
   const [page, setPage] = useState<Page>("landing");
 
   const navigate = (target: Page) => {
@@ -36,11 +36,7 @@ export default function App() {
   }
 
   if (page === "dashboard") {
-    return (
-      <Dashboard
-        onNavigate={(p) => navigate(p)}
-      />
-    );
+    return <Dashboard onNavigate={(p) => navigate(p)} />;
   }
 
   return null;
