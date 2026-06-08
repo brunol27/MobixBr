@@ -13,7 +13,7 @@ import {
 import { InputField } from "./InputField";
 
 interface LoginPageProps {
-  onNavigate: (page: "landing" | "dashboard" | "register") => void;
+  onNavigate: (page: "landing" | "dashboard" | "register" | "login") => void;
   mode?: "login" | "register";
 }
 
@@ -85,7 +85,7 @@ export function LoginPage({ onNavigate, mode = "login" }: LoginPageProps) {
 
     try {
       if (currentMode === "register") {
-        // 1) cria usuário (sem confirmação de e-mail)
+        // 1) cria usuário no Supabase Auth
         const { error: signUpError } = await supabase.auth.signUp({
           email: form.emailOrCpf,
           password: form.password,
@@ -100,7 +100,7 @@ export function LoginPage({ onNavigate, mode = "login" }: LoginPageProps) {
 
         if (signUpError) throw signUpError;
 
-        // 2) insere na lista de espera (waiting_list)
+        // 2) insere na lista de espera
         const { error: insertError } = await supabase
           .from("waiting_list")
           .insert({
@@ -112,11 +112,16 @@ export function LoginPage({ onNavigate, mode = "login" }: LoginPageProps) {
 
         if (insertError) throw insertError;
 
+        // mostra tela de sucesso e depois volta para landing
         setSuccess(true);
-        setTimeout(() => onNavigate("dashboard"), 1800);
+        setTimeout(() => {
+          onNavigate("landing");
+        }, 5000);
+
         return;
       }
 
+      // login normal
       const { error } = await supabase.auth.signInWithPassword({
         email: form.emailOrCpf,
         password: form.password,
@@ -717,13 +722,21 @@ export function LoginPage({ onNavigate, mode = "login" }: LoginPageProps) {
                       fontSize: "1.5rem",
                     }}
                   >
-                    Conta criada com sucesso!
+                    Cadastro concluído!
                   </h2>
                   <p
                     className="text-gray-500 mb-2"
                     style={{ lineHeight: 1.7 }}
                   >
-                    Bem-vindo à Mobix. Abrindo seu painel de conquista...
+                    Você entrou para a lista de espera da Mobix. Vamos te
+                    avisar em breve com os próximos passos.
+                  </p>
+                  <p
+                    className="text-gray-400 text-xs"
+                    style={{ lineHeight: 1.7 }}
+                  >
+                    Você será redirecionado para a página inicial em
+                    alguns segundos...
                   </p>
                 </>
               )}
