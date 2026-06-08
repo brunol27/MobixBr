@@ -1,43 +1,80 @@
-
-import { useState } from "react";
+// src/app/App.tsx
+import { Routes, Route, useNavigate, Navigate } from "react-router-dom";
 import { LandingPage } from "./components/LandingPage";
 import { LoginPage } from "./components/LoginPage";
 import { Dashboard } from "./components/Dashboard";
-
-type Page = "landing" | "login" | "register" | "dashboard";
+import { AdminWaitingListPage } from "./components/AdminWaitingListPage";
 
 export default function App() {
-  const [page, setPage] = useState<Page>("landing");
+  return (
+    <Routes>
+      {/* Landing */}
+      <Route path="/" element={<LandingWrapper />} />
 
-  const navigate = (target: Page) => {
-    setPage(target);
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
+      {/* Login */}
+      <Route path="/login" element={<LoginWrapper mode="login" />} />
 
-  if (page === "landing") {
-    return (
-      <LandingPage
-        onNavigate={(p) => navigate(p === "register" ? "register" : "login")}
-      />
-    );
-  }
+      {/* Register */}
+      <Route path="/register" element={<LoginWrapper mode="register" />} />
 
-  if (page === "login" || page === "register") {
-    return (
-      <LoginPage
-        mode={page === "register" ? "register" : "login"}
-        onNavigate={(p) => {
-          if (p === "landing") navigate("landing");
-          else if (p === "dashboard") navigate("dashboard");
-          else navigate("register");
-        }}
-      />
-    );
-  }
+      {/* Dashboard */}
+      <Route path="/dashboard" element={<DashboardWrapper />} />
 
-  if (page === "dashboard") {
-    return <Dashboard onNavigate={(p) => navigate(p)} />;
-  }
+      {/* Admin - lista de espera */}
+      <Route path="/admin/waiting-list" element={<AdminWaitingListPage />} />
 
-  return null;
+      {/* Qualquer outra rota → landing */}
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
+}
+
+/**
+ * Wrappers para adaptar seu onNavigate baseado em string de página
+ * para navegação por URL com useNavigate.
+ */
+
+function LandingWrapper() {
+  const navigate = useNavigate();
+
+  return (
+    <LandingPage
+      onNavigate={(p) => {
+        if (p === "register") navigate("/register");
+        else navigate("/login");
+      }}
+    />
+  );
+}
+
+function LoginWrapper({ mode }: { mode: "login" | "register" }) {
+  const navigate = useNavigate();
+
+  return (
+    <LoginPage
+      mode={mode}
+      onNavigate={(p) => {
+        if (p === "landing") navigate("/");
+        else if (p === "dashboard") navigate("/dashboard");
+        else if (p === "register") navigate("/register");
+        else navigate("/login");
+      }}
+    />
+  );
+}
+
+function DashboardWrapper() {
+  const navigate = useNavigate();
+
+  return (
+    <Dashboard
+      onNavigate={(p) => {
+        if (p === "landing") navigate("/");
+        else if (p === "login") navigate("/login");
+        else if (p === "register") navigate("/register");
+        else if (p === "admin") navigate("/admin/waiting-list");
+        else navigate("/dashboard");
+      }}
+    />
+  );
 }

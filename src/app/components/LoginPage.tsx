@@ -53,16 +53,23 @@ export function LoginPage({ onNavigate, mode = "login" }: LoginPageProps) {
     if (!form.cpf) e.cpf = "Informe seu CPF.";
     else if (form.cpf.replace(/\D/g, "").length !== 11)
       e.cpf = "CPF inválido. Verifique os 11 dígitos.";
+
+    if (!form.phone) e.phone = "Informe seu telefone (WhatsApp).";
+
     if (!form.emailOrCpf) e.emailOrCpf = "Informe seu e-mail.";
     else if (!form.emailOrCpf.includes("@"))
       e.emailOrCpf = "E-mail inválido.";
+
     if (!form.password) e.password = "Crie uma senha.";
     else if (form.password.length < 8)
       e.password = "A senha deve ter pelo menos 8 caracteres.";
+
     if (form.password !== form.confirmPassword)
       e.confirmPassword = "As senhas não coincidem.";
+
     if (!form.terms)
       e.terms = "Você precisa aceitar os termos para continuar.";
+
     return e;
   };
 
@@ -78,7 +85,8 @@ export function LoginPage({ onNavigate, mode = "login" }: LoginPageProps) {
 
     try {
       if (currentMode === "register") {
-        const { error } = await supabase.auth.signUp({
+        // 1) cria usuário (sem confirmação de e-mail)
+        const { error: signUpError } = await supabase.auth.signUp({
           email: form.emailOrCpf,
           password: form.password,
           options: {
@@ -90,7 +98,19 @@ export function LoginPage({ onNavigate, mode = "login" }: LoginPageProps) {
           },
         });
 
-        if (error) throw error;
+        if (signUpError) throw signUpError;
+
+        // 2) insere na lista de espera (waiting_list)
+        const { error: insertError } = await supabase
+          .from("waiting_list")
+          .insert({
+            name: form.name,
+            email: form.emailOrCpf,
+            phone: form.phone,
+            cpf: form.cpf,
+          });
+
+        if (insertError) throw insertError;
 
         setSuccess(true);
         setTimeout(() => onNavigate("dashboard"), 1800);
@@ -399,6 +419,19 @@ export function LoginPage({ onNavigate, mode = "login" }: LoginPageProps) {
                     setForm((f) => ({ ...f, name: v }));
                     if (errors.name)
                       setErrors((er) => ({ ...er, name: "" }));
+                  }}
+                />
+
+                <InputField
+                  label="Telefone (WhatsApp)"
+                  value={form.phone}
+                  error={errors.phone}
+                  placeholder="(44) 99999-9999"
+                  hint="Usaremos apenas para contato sobre sua vaga na lista de espera."
+                  onChange={(v) => {
+                    setForm((f) => ({ ...f, phone: v }));
+                    if (errors.phone)
+                      setErrors((er) => ({ ...er, phone: "" }));
                   }}
                 />
 
