@@ -1,0 +1,17 @@
+# Dependências do Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Variáveis de ambiente (segredos/senhas)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Build/compilação (arquivos gerados automaticamente)
+dist/
+build/
+out/
+.next/
